@@ -234,6 +234,12 @@ typedef enum {
     WIFI_ACCESS_CATEGORY_VOICE = 3
 } wifi_access_category;
 
+/* Channel category mask */
+typedef enum {
+    WIFI_INDOOR_CHANNEL = 1 << 0,
+    WIFI_DFS_CHANNEL    = 1 << 1,
+} wifi_channel_category;
+
 /* Antenna configuration */
 typedef enum {
   WIFI_ANTENNA_UNSPECIFIED = 0,
@@ -1170,9 +1176,52 @@ typedef struct {
     wifi_error (*wifi_get_supported_iface_concurrency_matrix)(
         wifi_handle handle, wifi_iface_concurrency_matrix *matrix);
 
+    /**@brief wifi_enable_sta_channel_for_peer_network
+     *        enable or disable the feature of allowing current STA-connected
+     *        channel for WFA GO, SAP and Wi-Fi Aware when the regulatory allows.
+     * @param handle global wifi_handle
+     * @param channelCategoryEnableFlag bitmask of |wifi_channel_category|.
+     * @return Synchronous wifi_error
+     */
+    wifi_error (*wifi_enable_sta_channel_for_peer_network)(
+        wifi_handle handle, u32 channelCategoryEnableFlag);
+
+    /**@brief wifi_nan_suspend_request
+     * Request that the specified NAN session be suspended.
+     * @param transaction_id: NAN transaction id
+     * @param wifi_interface_handle
+     * @param NanSuspendRequest request message
+     * @return Synchronous wifi_error
+     */
+    wifi_error (*wifi_nan_suspend_request)(transaction_id id, wifi_interface_handle iface,
+                                                   NanSuspendRequest *msg);
+
+    /**@brief wifi_nan_resume_request
+     * Request that the specified NAN session be resumed.
+     * @param transaction_id: NAN transaction id
+     * @param wifi_interface_handle
+     * @param NanResumeRequest request message
+     * @return Synchronous wifi_error
+     */
+    wifi_error (*wifi_nan_resume_request)(transaction_id id, wifi_interface_handle iface,
+                                                   NanResumeRequest *msg);
+
+    wifi_error (*wifi_nan_pairing_request)(
+        transaction_id id, wifi_interface_handle iface,
+        NanPairingRequest *msg);
+    wifi_error (*wifi_nan_pairing_indication_response)(
+        transaction_id id, wifi_interface_handle iface,
+        NanPairingIndicationResponse *msg);
+    wifi_error (*wifi_nan_bootstrapping_request)(
+        transaction_id id, wifi_interface_handle iface,
+        NanBootstrappingRequest *msg);
+    wifi_error (*wifi_nan_bootstrapping_indication_response)(
+        transaction_id id, wifi_interface_handle iface,
+        NanBootstrappingIndicationResponse *msg);
+
     /*
      * when adding new functions make sure to add stubs in
-     * hal_tool.cpp::init_wifi_stub_hal_func_table
+     * wifi_legacy_hal_stubs.cpp::initHalFuncTableWithStubs
      */
 } wifi_hal_fn;
 
