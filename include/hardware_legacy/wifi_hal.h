@@ -1210,7 +1210,7 @@ typedef struct {
         transaction_id id, wifi_interface_handle iface,
         NanPairingRequest *msg);
     wifi_error (*wifi_nan_pairing_indication_response)(
-        transaction_id id, wifi_interface_handle iface,
+    transaction_id id, wifi_interface_handle iface,
         NanPairingIndicationResponse *msg);
     wifi_error (*wifi_nan_bootstrapping_request)(
         transaction_id id, wifi_interface_handle iface,
@@ -1218,6 +1218,14 @@ typedef struct {
     wifi_error (*wifi_nan_bootstrapping_indication_response)(
         transaction_id id, wifi_interface_handle iface,
         NanBootstrappingIndicationResponse *msg);
+
+    /**@brief wifi_set_scan_mode
+     *        Notify driver/firmware current is scan only mode to allow lower
+     *        level to optimize power consumption.
+     * @param enable true if current is scan only mode
+     * @return Synchronous wifi_error
+     */
+    wifi_error (*wifi_set_scan_mode)(const char * ifname, bool enable);
 
     /*
      * when adding new functions make sure to add stubs in
