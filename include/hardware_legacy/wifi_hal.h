@@ -24,6 +24,7 @@ extern "C"
 #include <stdint.h>
 
 #define IFNAMSIZ 16
+#define UNSPECIFIED -1 // wifi HAL common definition for unspecified value
 
 /* typedefs */
 typedef unsigned char byte;
@@ -233,6 +234,12 @@ typedef enum {
     WIFI_ACCESS_CATEGORY_VOICE = 3
 } wifi_access_category;
 
+/* Channel category mask */
+typedef enum {
+    WIFI_INDOOR_CHANNEL = 1 << 0,
+    WIFI_DFS_CHANNEL    = 1 << 1,
+} wifi_channel_category;
+
 /* Antenna configuration */
 typedef enum {
   WIFI_ANTENNA_UNSPECIFIED = 0,
@@ -277,6 +284,22 @@ typedef struct {
     /* Each row represents possible radio combinations */
     wifi_radio_combination radio_combinations[];
 } wifi_radio_combination_matrix;
+
+typedef struct {
+    /**
+     * Maximum number of links used in Multi-Link Operation. The maximum
+     * number of links used for MLO can be different from the number of
+     * radios supported by the chip.
+     *
+     * This is a static configuration of the chip.
+     */
+    u32 max_mlo_link_count;
+    /**
+     * Maximum number of concurrent TDLS sessions supported by the chip.
+     *
+     */
+    u32 max_concurrent_tdls_session_count;
+} wifi_chip_capabilities;
 
 #define MAX_IFACE_COMBINATIONS 16
 #define MAX_IFACE_LIMITS 8
@@ -1134,6 +1157,13 @@ typedef struct {
      */
     wifi_error (*wifi_get_cached_scan_results)(wifi_interface_handle iface,
                                                wifi_cached_scan_result_handler handler);
+    /**@brief wifi_get_chip_capabilities
+     *        Retrieve capabilities supported by this chip
+     * @param wifi_handle
+     * @return Synchronous wifi_error and chip capabilites
+     */
+    wifi_error (*wifi_get_chip_capabilities)(wifi_handle handle,
+                                             wifi_chip_capabilities *chip_capabilities);
 
     /**@brief wifi_get_supported_iface_concurrency_matrix
      *        Request all the possible interface concurrency combinations this
@@ -1146,9 +1176,52 @@ typedef struct {
     wifi_error (*wifi_get_supported_iface_concurrency_matrix)(
         wifi_handle handle, wifi_iface_concurrency_matrix *matrix);
 
+    /**@brief wifi_enable_sta_channel_for_peer_network
+     *        enable or disable the feature of allowing current STA-connected
+     *        channel for WFA GO, SAP and Wi-Fi Aware when the regulatory allows.
+     * @param handle global wifi_handle
+     * @param channelCategoryEnableFlag bitmask of |wifi_channel_category|.
+     * @return Synchronous wifi_error
+     */
+    wifi_error (*wifi_enable_sta_channel_for_peer_network)(
+        wifi_handle handle, u32 channelCategoryEnableFlag);
+
+    /**@brief wifi_nan_suspend_request
+     * Request that the specified NAN session be suspended.
+     * @param transaction_id: NAN transaction id
+     * @param wifi_interface_handle
+     * @param NanSuspendRequest request message
+     * @return Synchronous wifi_error
+     */
+    wifi_error (*wifi_nan_suspend_request)(transaction_id id, wifi_interface_handle iface,
+                                                   NanSuspendRequest *msg);
+
+    /**@brief wifi_nan_resume_request
+     * Request that the specified NAN session be resumed.
+     * @param transaction_id: NAN transaction id
+     * @param wifi_interface_handle
+     * @param NanResumeRequest request message
+     * @return Synchronous wifi_error
+     */
+    wifi_error (*wifi_nan_resume_request)(transaction_id id, wifi_interface_handle iface,
+                                                   NanResumeRequest *msg);
+
+    wifi_error (*wifi_nan_pairing_request)(
+        transaction_id id, wifi_interface_handle iface,
+        NanPairingRequest *msg);
+    wifi_error (*wifi_nan_pairing_indication_response)(
+        transaction_id id, wifi_interface_handle iface,
+        NanPairingIndicationResponse *msg);
+    wifi_error (*wifi_nan_bootstrapping_request)(
+        transaction_id id, wifi_interface_handle iface,
+        NanBootstrappingRequest *msg);
+    wifi_error (*wifi_nan_bootstrapping_indication_response)(
+        transaction_id id, wifi_interface_handle iface,
+        NanBootstrappingIndicationResponse *msg);
+
     /*
      * when adding new functions make sure to add stubs in
-     * hal_tool.cpp::init_wifi_stub_hal_func_table
+     * wifi_legacy_hal_stubs.cpp::initHalFuncTableWithStubs
      */
 } wifi_hal_fn;
 
