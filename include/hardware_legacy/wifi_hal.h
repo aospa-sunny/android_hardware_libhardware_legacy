@@ -287,13 +287,13 @@ typedef struct {
 
 typedef struct {
     /**
-     * Maximum number of links used in Multi-Link Operation. The maximum
-     * number of links used for MLO can be different from the number of
-     * radios supported by the chip.
+     * Maximum number of Simultaneous Transmit and Receive (STR) links used
+     * in Multi-Link Operation. The maximum number of STR links used can be
+     * different from the maximum number of radios supported by the chip.
      *
      * This is a static configuration of the chip.
      */
-    u32 max_mlo_link_count;
+    u32 max_mlo_str_link_count;
     /**
      * Maximum number of concurrent TDLS sessions supported by the chip.
      *
@@ -454,6 +454,7 @@ void wifi_get_error_info(wifi_error err, const char **msg); // return a pointer 
 #define WIFI_FEATURE_SET_LATENCY_MODE   (uint64_t)0x40000000  // Support Latency mode setting
 #define WIFI_FEATURE_P2P_RAND_MAC       (uint64_t)0x80000000  // Support P2P MAC randomization
 #define WIFI_FEATURE_INFRA_60G          (uint64_t)0x100000000 // Support for 60GHz Band
+#define WIFI_FEATURE_AFC_CHANNEL        (uint64_t)0x200000000 // Support for setting 6GHz AFC channel allowance
 // Add more features here
 
 #define IS_MASK_SET(mask, flags)        (((flags) & (mask)) == (mask))
@@ -1210,7 +1211,7 @@ typedef struct {
         transaction_id id, wifi_interface_handle iface,
         NanPairingRequest *msg);
     wifi_error (*wifi_nan_pairing_indication_response)(
-        transaction_id id, wifi_interface_handle iface,
+    transaction_id id, wifi_interface_handle iface,
         NanPairingIndicationResponse *msg);
     wifi_error (*wifi_nan_bootstrapping_request)(
         transaction_id id, wifi_interface_handle iface,
@@ -1218,6 +1219,14 @@ typedef struct {
     wifi_error (*wifi_nan_bootstrapping_indication_response)(
         transaction_id id, wifi_interface_handle iface,
         NanBootstrappingIndicationResponse *msg);
+
+    /**@brief wifi_set_scan_mode
+     *        Notify driver/firmware current is scan only mode to allow lower
+     *        level to optimize power consumption.
+     * @param enable true if current is scan only mode
+     * @return Synchronous wifi_error
+     */
+    wifi_error (*wifi_set_scan_mode)(const char * ifname, bool enable);
 
     /*
      * when adding new functions make sure to add stubs in
